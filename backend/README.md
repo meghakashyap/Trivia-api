@@ -42,6 +42,16 @@ From within the `./src` directory first ensure you are working using your create
 
 To run the server, execute:
 
+in window command prompt
+Set FLASK_APP=flaskr
+Set FLASK_ENV=development
+Flask run --reload /flask run
+
+in window poweshell
+$env:FLASK_APP = "flaskr"                                                   
+$env:FLASK_ENV = "development" 
+flask run
+
 ```bash
 flask run --reload
 ```

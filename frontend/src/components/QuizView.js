@@ -6,14 +6,14 @@ const questionsPerPlay = 5;
 
 class QuizView extends Component {
   constructor(props) {
-    super();
+    super(props);
     this.state = {
       quizCategory: null,
       previousQuestions: [],
       showAnswer: false,
       categories: {},
       numCorrect: 0,
-      currentQuestion: {},
+      currentQuestion: {answer: ''},
       guess: '',
       forceEnd: false,
     };
@@ -24,8 +24,13 @@ class QuizView extends Component {
       url: `/categories`, //TODO: update request URL
       type: 'GET',
       success: (result) => {
-        this.setState({ categories: result.categories });
-        return;
+        if (result && result.categories) {
+          this.setState({ categories: result.categories });
+          return;
+        } else {
+          this.setState({ categories: {} });
+          return;
+        }
       },
       error: (error) => {
         alert('Unable to load categories. Please try your request again');
@@ -47,32 +52,43 @@ class QuizView extends Component {
     if (this.state.currentQuestion.id) {
       previousQuestions.push(this.state.currentQuestion.id);
     }
+    const requestData = {
+      previous_questions: previousQuestions,
+      quiz_category: this.state.quizCategory,
+    };
+  
+    console.log('Request data:', requestData);  // Log the data being sent
 
     $.ajax({
       url: '/quizzes', //TODO: update request URL
       type: 'POST',
       dataType: 'json',
       contentType: 'application/json',
-      data: JSON.stringify({
-        previous_questions: previousQuestions,
-        quiz_category: this.state.quizCategory,
-      }),
-      xhrFields: {
-        withCredentials: true,
-      },
-      crossDomain: true,
+      // data: JSON.stringify({
+      //   previous_questions: previousQuestions,
+      //   quiz_category: this.state.quizCategory,
+      // }),
+      data: JSON.stringify(requestData),
+      // xhrFields: {
+      //   withCredentials: true,
+      // },
+      // crossDomain: true,
       success: (result) => {
-        this.setState({
-          showAnswer: false,
-          previousQuestions: previousQuestions,
-          currentQuestion: result.question,
-          guess: '',
-          forceEnd: result.question ? false : true,
-        });
+        if (result.question && result.question.answer) {
+          this.setState({
+            showAnswer: false,
+            previousQuestions: previousQuestions,
+            currentQuestion: result.question,
+            guess: '',
+            forceEnd: result.question ? false : true,
+          });
+        } else {
+          alert('Received an invalid question from the server');
+        }
         return;
       },
       error: (error) => {
-        alert('Unable to load question. Please try your request again');
+        alert('Hi Unable to load question. Please try your request again');
         return;
       },
     });
@@ -140,6 +156,8 @@ class QuizView extends Component {
   }
 
   evaluateAnswer = () => {
+    // const guess = this.state.guess || '';
+    // const answer = this.state.currentQuestion.answer || '';
     const formatGuess = this.state.guess
       // eslint-disable-next-line
       .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, '')

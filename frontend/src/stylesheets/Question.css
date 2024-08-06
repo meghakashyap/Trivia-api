@@ -63,7 +63,7 @@ span.page-num {
 }
 
 span.page-num.active {
-  color: blue;
+  color: rgb(71, 67, 185);
 }
 
 img.category {

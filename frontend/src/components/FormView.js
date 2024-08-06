@@ -4,7 +4,7 @@ import '../stylesheets/FormView.css';
 
 class FormView extends Component {
   constructor(props) {
-    super();
+    super(props);
     this.state = {
       question: '',
       answer: '',
@@ -19,10 +19,17 @@ class FormView extends Component {
       url: `/categories`, //TODO: update request URL
       type: 'GET',
       success: (result) => {
-        this.setState({ categories: result.categories });
-        return;
+        if (result && result.categories) {
+          this.setState({ categories: result.categories });
+          console.log('Fetched categories:', result.categories);
+          return;
+        } else {
+          this.setState({ categories: {} });
+          return;
+        }
       },
       error: (error) => {
+        console.error('Category fetch error:', error); 
         alert('Unable to load categories. Please try your request again');
         return;
       },
@@ -62,6 +69,8 @@ class FormView extends Component {
   };
 
   render() {
+    const { categories } = this.state;
+    
     return (
       <div id='add-form'>
         <h2>Add a New Trivia Question</h2>
@@ -72,15 +81,15 @@ class FormView extends Component {
         >
           <label>
             Question
-            <input type='text' name='question' onChange={this.handleChange} />
+            <input type='text' name='question' value={this.state.question} onChange={this.handleChange} />
           </label>
           <label>
             Answer
-            <input type='text' name='answer' onChange={this.handleChange} />
+            <input type='text' name='answer' value={this.state.answer} onChange={this.handleChange} />
           </label>
           <label>
             Difficulty
-            <select name='difficulty' onChange={this.handleChange}>
+            <select name='difficulty' value={this.state.difficulty} onChange={this.handleChange}>
               <option value='1'>1</option>
               <option value='2'>2</option>
               <option value='3'>3</option>
@@ -90,14 +99,18 @@ class FormView extends Component {
           </label>
           <label>
             Category
-            <select name='category' onChange={this.handleChange}>
-              {Object.keys(this.state.categories).map((id) => {
-                return (
+            <select name='category' value={this.state.category} onChange={this.handleChange} >
+              {Object.keys(categories).length > 0 ? (
+                Object.keys(categories).map((id) => (
                   <option key={id} value={id}>
-                    {this.state.categories[id]}
+                    {categories[id]}
                   </option>
-                );
-              })}
+                ))
+              ) : (
+                <option value='' disabled>
+                 No categories available 
+                </option>
+              )}
             </select>
           </label>
           <input type='submit' className='button' value='Submit' />
